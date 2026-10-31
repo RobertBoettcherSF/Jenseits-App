@@ -2,8 +2,9 @@
 (function () {
   "use strict";
 
-  var APP_VERSION = "v0.1.0-stub b20261031-1629 22e78b5";
-  var CACHE_V = "1";
+  var APP_VERSION = "v0.1.1-splash b20261031-1720 5fe2276";
+  var CACHE_V = "2";
+  var SPLASH_MS = 4000;
   var STORAGE_KEY = "jenseits.v1";
   var LANGS = ["de", "en", "fr"];
   var TABS = ["experience", "share", "near", "info"];
@@ -96,7 +97,7 @@
     var skip = $("skip");
     if (skip) {
       skip.textContent = t("skip");
-      skip.setAttribute("href", state.settings.lang ? "#main" : "#splash-langs");
+      skip.setAttribute("href", splashOpen() ? "#splash-langs" : "#main");
     }
     var buttons = document.querySelectorAll("[data-set-lang]");
     for (i = 0; i < buttons.length; i++) {
@@ -125,7 +126,12 @@
     refreshDebugLine();
   }
 
+  function splashOpen() {
+    return document.documentElement.getAttribute("data-skip-splash") !== "1";
+  }
+
   function showShell() {
+    stopSplash();
     document.documentElement.setAttribute("data-skip-splash", "1");
     applyI18n();
     selectTab(state.settings.lastTab || "experience");
@@ -136,12 +142,149 @@
     state.settings.lang = code;
     if (TABS.indexOf(state.settings.lastTab) < 0) state.settings.lastTab = "experience";
     persist();
-    var entering = document.documentElement.getAttribute("data-skip-splash") !== "1";
-    showShell();
-    if (entering) {
-      var tab = $("tab-" + state.settings.lastTab);
-      if (tab) tab.focus();
+    if (splashOpen()) {
+      applyI18n();
+      armSplashTimer();
+      return;
     }
+    showShell();
+  }
+
+  /* Expanding concentric rings. Not the Field 1 WASM viz — a small canvas only. */
+  var splashTimer = 0;
+  var ringRaf = 0;
+  var ringOn = false;
+  var ringPhase = 0.2;
+  var ringLast = 0;
+  var ringDpr = 1;
+  var ringSolid = [];
+  var ringDash = [7, 9];
+  var RING_N = 22;
+  var SPOKE_N = 18;
+
+  function ringMotion() {
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function fitRings() {
+    var canvas = $("rings");
+    if (!canvas) return null;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = canvas.clientWidth || window.innerWidth;
+    var h = canvas.clientHeight || window.innerHeight;
+    var bw = Math.max(1, Math.round(w * dpr));
+    var bh = Math.max(1, Math.round(h * dpr));
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
+    ringDpr = dpr;
+    return { canvas: canvas, ctx: canvas.getContext("2d"), w: w, h: h };
+  }
+
+  function paintRings(stillPhase) {
+    var fit = fitRings();
+    if (!fit || !fit.ctx) return;
+    var ctx = fit.ctx;
+    var w = fit.w;
+    var h = fit.h;
+    var phase = stillPhase == null ? ringPhase : stillPhase;
+    ctx.setTransform(ringDpr, 0, 0, ringDpr, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, w, h);
+    var cx = w * 0.5;
+    var cy = h * (h < w ? 0.4 : 0.38);
+    var maxR = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy));
+    var minR = 6;
+    var i;
+    var a0 = phase * 0.35;
+    ctx.lineCap = "butt";
+    ctx.strokeStyle = "#e8941a";
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 1.15;
+    ctx.setLineDash(ringSolid);
+    for (i = 0; i < SPOKE_N; i++) {
+      var ang = a0 + (i / SPOKE_N) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ang) * maxR, cy + Math.sin(ang) * maxR);
+      ctx.stroke();
+    }
+    for (i = 0; i < RING_N; i++) {
+      var slot = (i / RING_N + phase) % 1;
+      var radius = minR + (maxR - minR) * Math.pow(slot, 1.28);
+      if (radius < 3) continue;
+      var cream = i % 4 === 0;
+      ctx.strokeStyle = cream ? "#f6e2b0" : "#f0a020";
+      ctx.globalAlpha = 0.45 + 0.55 * (1 - slot);
+      ctx.lineWidth = slot < 0.2 ? 1.7 : 1.15;
+      ctx.setLineDash(i % 3 === 1 ? ringDash : ringSolid);
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.setLineDash(ringSolid);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#f6e2b0";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function ringFrame(now) {
+    if (!ringOn) return;
+    if (!ringLast) ringLast = now;
+    var dt = Math.min(0.05, (now - ringLast) / 1000);
+    ringLast = now;
+    ringPhase = (ringPhase + dt * 0.22) % 1;
+    paintRings(null);
+    ringRaf = window.requestAnimationFrame(ringFrame);
+  }
+
+  function startRings() {
+    var canvas = $("rings");
+    if (!canvas) return;
+    if (ringRaf) window.cancelAnimationFrame(ringRaf);
+    ringRaf = 0;
+    ringLast = 0;
+    if (!ringMotion() || document.hidden) {
+      ringOn = false;
+      canvas.setAttribute("data-rings", "still");
+      paintRings(0.42);
+      return;
+    }
+    ringOn = true;
+    canvas.setAttribute("data-rings", "run");
+    ringRaf = window.requestAnimationFrame(ringFrame);
+  }
+
+  function stopSplash() {
+    ringOn = false;
+    if (ringRaf) window.cancelAnimationFrame(ringRaf);
+    ringRaf = 0;
+    if (splashTimer) window.clearTimeout(splashTimer);
+    splashTimer = 0;
+  }
+
+  function armSplashTimer() {
+    if (splashTimer) window.clearTimeout(splashTimer);
+    if (!splashOpen()) return;
+    splashTimer = window.setTimeout(enterFromSplash, SPLASH_MS);
+  }
+
+  function enterFromSplash() {
+    if (!splashOpen()) return;
+    if (!state.settings.lang) state.settings.lang = "de";
+    persist();
+    showShell();
+  }
+
+  function onSplashPointer(ev) {
+    if (!splashOpen()) return;
+    var node = ev.target;
+    if (node && node.closest && node.closest("button, a, input, select, textarea")) return;
+    enterFromSplash();
   }
 
   function refreshDebugLine() {
@@ -342,26 +485,64 @@
       });
     }
 
+    var splash = $("splash");
+    if (splash) splash.addEventListener("click", onSplashPointer);
+
     document.addEventListener("keydown", function (ev) {
       if (ev.key === "Escape") {
         var panel = $("debugpanel");
         if (panel && !panel.hidden) {
           toggleDebug(false);
           if (toggle) toggle.focus();
+          return;
+        }
+        if (splashOpen()) {
+          ev.preventDefault();
+          enterFromSplash();
         }
         return;
       }
-      if (ev.key !== "F9") return;
+      if (ev.key === "F9") {
+        var ftag = ev.target && ev.target.tagName;
+        if (ftag === "INPUT" || ftag === "TEXTAREA" || ftag === "SELECT") return;
+        ev.preventDefault();
+        toggleDebug();
+        return;
+      }
+      if (!splashOpen()) return;
       var tag = ev.target && ev.target.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (tag === "BUTTON" || tag === "A" || tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+      var key = ev.key;
+      var letter = key && key.length === 1 && !ev.metaKey && !ev.ctrlKey && !ev.altKey;
+      if (key !== " " && key !== "Enter" && !letter) return;
       ev.preventDefault();
-      toggleDebug();
+      enterFromSplash();
     });
 
-    window.addEventListener("resize", refreshDebugLine);
+    window.addEventListener("resize", function () {
+      refreshDebugLine();
+      if (splashOpen()) {
+        if (ringOn) return;
+        paintRings(0.42);
+      }
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (!splashOpen()) return;
+      if (document.hidden) {
+        ringOn = false;
+        if (ringRaf) window.cancelAnimationFrame(ringRaf);
+        ringRaf = 0;
+        return;
+      }
+      startRings();
+    });
     var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (motion.addEventListener) motion.addEventListener("change", refreshDebugLine);
-    else if (motion.addListener) motion.addListener(refreshDebugLine);
+    function onMotion() {
+      refreshDebugLine();
+      if (splashOpen()) startRings();
+    }
+    if (motion.addEventListener) motion.addEventListener("change", onMotion);
+    else if (motion.addListener) motion.addListener(onMotion);
   }
 
   function boot() {
@@ -369,11 +550,11 @@
     if (stamp) stamp.textContent = APP_VERSION;
     load();
     bind();
-    if (state.settings.lang) showShell();
-    else {
-      applyI18n();
-      selectTab("experience");
-    }
+    if (!state.settings.lang) state.settings.lang = "de";
+    applyI18n();
+    selectTab(state.settings.lastTab || "experience");
+    startRings();
+    armSplashTimer();
     if (storageMode === "memory") showStorageWarn();
   }
 

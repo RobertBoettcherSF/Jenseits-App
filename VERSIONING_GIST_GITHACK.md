@@ -5,7 +5,7 @@ Sichtbar bleiben, sonst wirkt ein Push wie „nichts passiert“. Muster aus dem
 ## Regeln
 
 1. Der Stempel steht auf **jedem** Schirm (Splash und Hülle), fest in der Ecke, hell, `z-index: 99999`, `pointer-events: none`. Er steht schon als Text in `index.html`, auch ohne JavaScript.
-2. Format: `v0.1.0-stub bYYYYMMDD-HHMM <kurzsha>`.
+2. Format: `v0.1.1-splash bYYYYMMDD-HHMM <kurzsha>`.
 3. Dieselbe Zeichenkette steht in `version.txt` neben `index.html` (eine Zeile).
 4. Jeder Push bekommt eine **neue** Zeichenkette. Dieselbe Version nicht wiederverwenden.
 5. Die Live-URL trägt `?v=N`. N bei jedem Push erhöhen.
@@ -14,9 +14,9 @@ Sichtbar bleiben, sonst wirkt ein Push wie „nichts passiert“. Muster aus dem
 
 ## URL
 
-Aktuell N=1:
+Aktuell N=2:
 
-https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=1
+https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=2
 
 Muster: `https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=N`
 
@@ -31,7 +31,7 @@ curl -fsSL "https://raw.githubusercontent.com/RobertBoettcherSF/Jenseits-App/mai
 2. Dieselbe Zeichenkette im HTML auf githack, mit dem neuen N:
 
 ```bash
-curl -fsSL "https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=1" | grep -F "v0.1.0-stub"
+curl -fsSL "https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=2" | grep -F "v0.1.1-splash"
 ```
 
 3. Stimmen die beiden Texte nicht überein, ist die Lieferung nicht fertig. Ein altes `?v=` zeigt oft den vorigen Stand.

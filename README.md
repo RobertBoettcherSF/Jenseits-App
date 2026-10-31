@@ -10,14 +10,14 @@ Dieser Stand ist nur **Splash + Hülle**. Fragebogen, Teilen per E-Mail und die 
 
 1. Ordner behalten (`index.html`, `css/`, `js/`, `version.txt` zusammen).
 2. `index.html` im Browser öffnen (Doppelklick, `file://` reicht — die App lädt nichts aus dem Netz).
-3. Sprache DE, EN oder FR wählen. Die Wahl liegt in `localStorage` unter `jenseits.v1`.
-4. Beim nächsten Öffnen entfällt der Splash. Die Sprache lässt sich in der Kopfzeile und unter Info wechseln.
+3. Der Splash kommt bei jedem Start. Eine gespeicherte Sprache ist vorausgewählt; eine andere Flagge ändert sie. Die Wahl liegt in `localStorage` unter `jenseits.v1`.
+4. Tippen oder eine Taste überspringt den Splash. Sonst geht es nach etwa 4 Sekunden in die Hülle. Die Sprache lässt sich danach in der Kopfzeile und unter Info wechseln.
 
 ## Live-URL
 
-Cache-Bust jedes Pushs, aktuell `?v=1`:
+Cache-Bust jedes Pushs, aktuell `?v=2`:
 
-https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=1
+https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=2
 
 Muster: `https://raw.githack.com/RobertBoettcherSF/Jenseits-App/main/index.html?v=N`
 
@@ -26,18 +26,18 @@ Diese README behauptet nicht, dass der CDN-Cache schon den neuen Stand ausliefer
 
 ## Soft-AC (Splash + Hülle)
 
-1. Splash: ruhiger Lichttunnel (weiche Ringe, helles Weiß/Cyan auf tiefem Indigo). Kein Kreuz, keine Engel, kein Heiligenschein, keine Kristalle, kein Mandala, kein esoterisches Lila.
-2. `prefers-reduced-motion: reduce` schaltet die Bewegung ab. Der Tunnel bleibt ein Standbild.
+1. Splash: volle konzentrische Ringe (Canvas, orange/creme auf Schwarz), leichtgewichtig, ohne die Field-1-WASM-Ansicht. Unten App-Name und der feste Versionsstempel.
+2. `prefers-reduced-motion: reduce` zeigt ein Standbild der Ringe, ohne Animation. Der Splash erscheint bei jedem Start.
 3. Sprachen DE / EN / FR. DE und EN vollständig, FR mit allen Schlüsseln (kurz).
 4. Sichtbarer Hinweis: inoffizielle Demo, nicht der Kanal. Auf dem Splash und unter Info.
 5. Danach vier senkrechte Bereiche: Erlebnis, Teilen, Nähe (Demo), Info. Die drei ersten sind Platzhalter („kommt als Nächstes“).
-6. Heller Versionsstempel auf jedem Schirm. Format `v0.1.0-stub bYYYYMMDD-HHMM <kurzsha>`. Dieselbe Zeile in `version.txt`.
+6. Heller Versionsstempel auf jedem Schirm. Format `v0.1.1-splash bYYYYMMDD-HHMM <kurzsha>`. Dieselbe Zeile in `version.txt`.
 7. Debug-Zeile immer sichtbar (`Debug · F9`, Sprache, Viewport-Breite, `reduced-motion: yes/no`). F9 öffnet den Bericht. „Bericht speichern“ schreibt eine Text/JSON-Datei nur mit technischen Feldern (`appVersion`, `lang`, `ua`, `screen`, `reducedMotion`, …). Keine Erlebnis-Inhalte.
 8. Hilfe-Leiste immer sichtbar: Telefonseelsorge 0800 111 0 111 und 0800 111 0 222, Notruf 112. Hinweis, keine Beratung.
 9. Sicherung: JSON-Export und -Import nur für Sprache und zuletzt geöffneten Bereich, `localStorage` in `try/catch`.
 
 ## Version
 
-`v0.1.0-stub b20261031-1629 22e78b5`
+`v0.1.1-splash b20261031-1720 5fe2276`
 
 Dieselbe Zeile steht in `version.txt` und im sichtbaren Stempel.

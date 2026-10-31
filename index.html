@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#070b18">
+<meta name="theme-color" content="#000000">
 <meta name="description" content="Inoffizielle Demo-Hülle. Nicht der YouTube-Kanal Einblicke-ins-Jenseits.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Jenseits Demo">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23070b18'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%239fd4ee' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f7feff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23000'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23f0a020' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23f6e2b0' stroke-width='1.2'/%3E%3C/svg%3E">
 <title>Einblicke-ins-Jenseits — inoffizielle Demo</title>
 <script>
 (function () {
@@ -20,31 +20,25 @@
     var lang = data && data.settings && data.settings.lang;
     if (lang === "de" || lang === "en" || lang === "fr") {
       document.documentElement.lang = lang;
-      document.documentElement.setAttribute("data-skip-splash", "1");
     }
   } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="css/app.css?v=1">
+<link rel="stylesheet" href="css/app.css?v=2">
 </head>
 <body>
 <a class="skip" id="skip" href="#splash-langs">Zum Inhalt</a>
 <!-- Stamp text must match version.txt exactly. Visible without JavaScript. -->
-<div id="ver">v0.1.0-stub b20261031-1629 22e78b5</div>
+<div id="ver">v0.1.1-splash b20261031-1720 5fe2276</div>
 
 <div id="splash">
-  <div class="tunnel" aria-hidden="true">
-    <div class="tunnel-sky"></div>
-    <div class="tunnel-rings"></div>
-  </div>
-  <div class="splash-card">
-    <p class="eyebrow">Inoffizielle Demo · Unofficial demo · Démo non officielle</p>
-    <h1>Einblicke-ins-Jenseits</h1>
-    <p class="splash-lead">
-      <span lang="de">Ein ruhiger Lichttunnel. Wähle eine Sprache.</span>
-      <span lang="en">A quiet tunnel of light. Choose a language.</span>
-      <span lang="fr">Tunnel de lumière calme. Choisis une langue.</span>
-    </p>
+  <canvas id="rings" aria-hidden="true"></canvas>
+  <div class="splash-bottom">
+    <div class="disclaimer">
+      <span lang="de">Inoffizielle Demo. Diese Seite gehört nicht zum YouTube-Kanal „Einblicke-ins-Jenseits“ und kommt nicht von den Menschen, die den Kanal betreiben.</span>
+      <span lang="en">Unofficial demo. This page is not from the YouTube channel “Einblicke-ins-Jenseits” and not from the people who run that channel.</span>
+      <span lang="fr">Démo non officielle. Pas le canal YouTube « Einblicke-ins-Jenseits ».</span>
+    </div>
     <p class="lang-label" id="splash-lang-label">Sprache · Language · Langue</p>
     <div class="flags" id="splash-langs" role="group" aria-labelledby="splash-lang-label">
       <button type="button" class="flag" data-set-lang="de" lang="de" aria-label="Deutsch" aria-pressed="false">
@@ -60,11 +54,8 @@
         <span class="flag-code">FR</span>
       </button>
     </div>
-    <div class="disclaimer">
-      <span lang="de">Inoffizielle Demo. Diese Seite gehört nicht zum YouTube-Kanal „Einblicke-ins-Jenseits“ und kommt nicht von den Menschen, die den Kanal betreiben.</span>
-      <span lang="en">Unofficial demo. This page is not from the YouTube channel “Einblicke-ins-Jenseits” and not from the people who run that channel.</span>
-      <span lang="fr">Démo non officielle. Pas le canal YouTube « Einblicke-ins-Jenseits ».</span>
-    </div>
+    <p class="splash-skip" data-i18n="splash.skip">Tippen zum Weiter</p>
+    <h1 class="splash-name" id="splash-name" data-i18n="title">Einblicke-ins-Jenseits</h1>
     <noscript>
       <p class="noscript">JavaScript wird gebraucht. Bitte in Safari öffnen. JavaScript is required. Open in Safari. JavaScript requis. Ouvre dans Safari.</p>
     </noscript>
@@ -161,7 +152,7 @@
   <a href="tel:112" data-i18n-aria="help.tel112" aria-label="Notruf 112">112</a>
 </footer>
 
-<script src="js/i18n.js?v=1"></script>
-<script src="js/app.js?v=1"></script>
+<script src="js/i18n.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
 </body>
 </html>
