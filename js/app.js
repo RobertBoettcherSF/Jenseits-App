@@ -2,8 +2,10 @@
 (function () {
   "use strict";
 
-  var APP_VERSION = "v0.1.2-tunnel b20261031-1752 f7b4abc";
-  var CACHE_V = "3";
+  var APP_VERSION = "v0.1.3-tunnel b20261031-1818 c3db720";
+  var CACHE_V = "5";
+  var VERSION_TXT = "https://raw.githubusercontent.com/RobertBoettcherSF/Jenseits-App/main/version.txt";
+  var PLAY_ROOT = "https://raw.githack.com/RobertBoettcherSF/Jenseits-App/";
   var STORAGE_KEY = "jenseits.v1";
   var LANGS = ["de", "en", "fr"];
   var TABS = ["experience", "share", "near", "info"];
@@ -149,15 +151,12 @@
     }
   }
 
-  /* Upper half of a dipole field: tunnel arches, cream on black. Not the Ada WASM viz. */
+  /* Concentric tunnel rings from the splash kit, vanishing point at mid-screen. No mascot. */
   var ringRaf = 0;
   var ringOn = false;
-  var ringPhase = 0.2;
+  var ringPhase = 0;
   var ringLast = 0;
   var ringDpr = 1;
-  var ringSolid = [];
-  var ringDash = [3, 6];
-  var FIELD_N = 20;
 
   function ringMotion() {
     return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -182,73 +181,41 @@
   function paintRings(stillPhase) {
     var fit = fitRings();
     if (!fit || !fit.ctx) return;
-    var ctx = fit.ctx;
-    var w = fit.w;
-    var h = fit.h;
-    var phase = stillPhase == null ? ringPhase : stillPhase;
-    var panel = document.querySelector(".splash-bottom");
-    var panelTop = panel ? panel.getBoundingClientRect().top : h * 0.62;
-    var top = Math.max(4, h * 0.015);
-    var cy = panelTop - Math.max(16, h * 0.02);
-    if (cy < top + 48) cy = top + 48;
-    if (cy > h * 0.78) cy = h * 0.78;
-    var openH = cy - top;
-    var cx = w * 0.5;
-    var scale = Math.min((w * 0.52) / 1, openH / 0.4);
-    ctx.setTransform(ringDpr, 0, 0, ringDpr, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, w, h);
-    var glowR = Math.min(w, openH) * 0.55;
-    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
-    glow.addColorStop(0, "rgba(255, 252, 246, 0.95)");
-    glow.addColorStop(0.08, "rgba(246, 236, 214, 0.5)");
-    glow.addColorStop(0.28, "rgba(220, 210, 190, 0.12)");
-    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    var li;
-    var steps = 64;
-    for (li = 0; li < FIELD_N; li++) {
-      var t = ((li + phase) % FIELD_N) / FIELD_N;
-      var A = 0.045 + Math.pow(t, 0.92);
-      ctx.beginPath();
-      ctx.strokeStyle = li % 3 === 0 ? "#f4e7c8" : "#f7f6f2";
-      ctx.globalAlpha = 0.42 + 0.5 * (1 - t);
-      ctx.lineWidth = t < 0.25 ? 1.5 : 1.05;
-      ctx.setLineDash(li % 2 ? ringDash : ringSolid);
-      ctx.lineDashOffset = stillPhase == null ? -phase * 18 : 0;
-      var s;
-      for (s = 0; s <= steps; s++) {
-        var alpha = Math.PI * (0.5 - s / steps);
-        var sn = Math.sin(alpha);
-        var r = A * sn * sn;
-        var x = r * sn;
-        var y = r * Math.cos(alpha);
-        var sx = cx + x * scale;
-        var sy = cy - y * scale;
-        if (s === 0) ctx.moveTo(sx, sy);
-        else ctx.lineTo(sx, sy);
-      }
-      ctx.stroke();
+    var g = fit.ctx;
+    var W = fit.w;
+    var H = fit.h;
+    var ph = stillPhase == null ? ringPhase : 0;
+    var vx = W / 2;
+    var vy = H / 2;
+    var R = Math.hypot(W, H) * 0.75;
+    var K = 0.8;
+    var N = 22;
+    var k;
+    g.setTransform(ringDpr, 0, 0, ringDpr, 0, 0);
+    g.globalAlpha = 1;
+    g.setLineDash([]);
+    g.fillStyle = "#070b14";
+    g.fillRect(0, 0, W, H);
+    for (k = N; k >= 0; k--) {
+      var radius = R * Math.pow(K, k + 1 - ph);
+      if (radius < 3) continue;
+      var cy = vy - radius * 0.55;
+      var fade = Math.min(1, radius / (R * 0.35));
+      g.strokeStyle = "rgba(243,234,210," + (0.18 + 0.42 * fade).toFixed(3) + ")";
+      g.lineWidth = Math.max(0.6, radius / 140);
+      var dash = Math.max(2, radius * 0.09);
+      g.setLineDash([dash, dash * 0.8]);
+      g.beginPath();
+      g.arc(vx, cy, radius, 0, 2 * Math.PI);
+      g.stroke();
     }
-    ctx.setLineDash(ringSolid);
-    ctx.globalAlpha = 0.8;
-    ctx.strokeStyle = "#f7f4ea";
-    ctx.lineWidth = 1.15;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx, cy - 0.4 * scale);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#fffaf3";
-    ctx.beginPath();
-    ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
-    ctx.fill();
+    g.setLineDash([]);
+    var glowR = Math.min(42, R * 0.08);
+    var glow = g.createRadialGradient(vx, vy, 0, vx, vy, glowR);
+    glow.addColorStop(0, "rgba(243,234,210,0.55)");
+    glow.addColorStop(1, "rgba(243,234,210,0)");
+    g.fillStyle = glow;
+    g.fillRect(vx - glowR, vy - glowR, glowR * 2, glowR * 2);
   }
 
   function ringFrame(now) {
@@ -256,7 +223,7 @@
     if (!ringLast) ringLast = now;
     var dt = Math.min(0.05, (now - ringLast) / 1000);
     ringLast = now;
-    ringPhase = (ringPhase + dt * 0.07) % 1;
+    ringPhase = (ringPhase + dt / 2.6) % 1;
     paintRings(null);
     ringRaf = window.requestAnimationFrame(ringFrame);
   }
@@ -270,7 +237,7 @@
     if (!ringMotion() || document.hidden) {
       ringOn = false;
       canvas.setAttribute("data-rings", "still");
-      paintRings(0.42);
+      paintRings(0);
       return;
     }
     ringOn = true;
@@ -289,6 +256,71 @@
     if (!state.settings.lang) state.settings.lang = "de";
     persist();
     showShell();
+  }
+
+  function stampSha(stamp) {
+    var parts = String(stamp || "").replace(/^\s+|\s+$/g, "").split(/\s+/);
+    var i;
+    for (i = 0; i < parts.length; i++) {
+      if (/^[0-9a-f]{7,40}$/i.test(parts[i])) return parts[i];
+    }
+    return "";
+  }
+
+  /* Pinned commit when version.txt carries a SHA. Otherwise ?v= on the current URL. */
+  function reloadTarget(remote) {
+    var sha = stampSha(remote);
+    if (sha) return PLAY_ROOT + sha + "/index.html";
+    var build = "";
+    var parts = String(remote || "").replace(/^\s+|\s+$/g, "").split(/\s+/);
+    var i;
+    for (i = 0; i < parts.length; i++) {
+      if (/^b\d{8}-\d{4}$/.test(parts[i])) build = parts[i].slice(1);
+    }
+    var token = build || String(Date.now());
+    try {
+      var u = new URL(location.href);
+      u.searchParams.set("v", token);
+      return u.toString();
+    } catch (e2) {
+      return PLAY_ROOT + "main/index.html?v=" + token;
+    }
+  }
+
+  function showUpdateBanner(remote) {
+    var btn = $("upd");
+    if (!btn) return;
+    btn.hidden = false;
+    btn.setAttribute("data-href", reloadTarget(remote));
+  }
+
+  function hideUpdateBanner() {
+    var btn = $("upd");
+    if (!btn) return;
+    btn.hidden = true;
+    btn.removeAttribute("data-href");
+  }
+
+  function checkVersion() {
+    var url = VERSION_TXT + "?x=" + Date.now();
+    try {
+      fetch(url, { cache: "no-store" }).then(function (res) {
+        if (!res || !res.ok) return "";
+        return res.text();
+      }).then(function (text) {
+        var remote = String(text || "").replace(/^\s+|\s+$/g, "");
+        if (!remote || remote === APP_VERSION) {
+          hideUpdateBanner();
+          return;
+        }
+        showUpdateBanner(remote);
+      }).catch(function () {});
+    } catch (e3) {}
+  }
+
+  function scheduleVersionCheck() {
+    window.setTimeout(checkVersion, 1200);
+    window.setInterval(checkVersion, 60000);
   }
 
   function onSplashPointer(ev) {
@@ -498,6 +530,14 @@
 
     var splash = $("splash");
     if (splash) splash.addEventListener("click", onSplashPointer);
+    var upd = $("upd");
+    if (upd) upd.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      var href = upd.getAttribute("data-href");
+      if (!href) return;
+      location.replace(href);
+    });
 
     document.addEventListener("keydown", function (ev) {
       if (ev.key === "Escape") {
@@ -534,7 +574,7 @@
       refreshDebugLine();
       if (splashOpen()) {
         if (ringOn) return;
-        paintRings(0.42);
+        paintRings(0);
       }
     });
     document.addEventListener("visibilitychange", function () {
@@ -565,6 +605,7 @@
     applyI18n();
     selectTab(state.settings.lastTab || "experience");
     startRings();
+    scheduleVersionCheck();
     if (storageMode === "memory") showStorageWarn();
   }
 

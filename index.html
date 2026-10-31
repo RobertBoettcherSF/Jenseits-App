@@ -24,12 +24,13 @@
   } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="css/app.css?v=3">
+<link rel="stylesheet" href="css/app.css?v=5">
 </head>
 <body>
 <a class="skip" id="skip" href="#splash-langs">Zum Inhalt</a>
 <!-- Stamp text must match version.txt exactly. Visible without JavaScript. -->
-<div id="ver">v0.1.2-tunnel b20261031-1752 f7b4abc</div>
+<div id="ver">v0.1.3-tunnel b20261031-1818 c3db720</div>
+<button type="button" id="upd" hidden data-i18n="update.banner">Neue Version — tippen zum Neuladen</button>
 
 <div id="splash">
   <canvas id="rings" aria-hidden="true"></canvas>
@@ -39,6 +40,7 @@
       <span lang="en">Unofficial demo. This page is not from the YouTube channel “Einblicke-ins-Jenseits” and not from the people who run that channel.</span>
       <span lang="fr">Démo non officielle. Pas le canal YouTube « Einblicke-ins-Jenseits ».</span>
     </div>
+    <div class="splash-actions">
     <p class="lang-label" id="splash-lang-label">Sprache · Language · Langue</p>
     <div class="flags" id="splash-langs" role="group" aria-labelledby="splash-lang-label">
       <button type="button" class="flag" data-set-lang="de" lang="de" aria-label="Deutsch" aria-pressed="false">
@@ -54,8 +56,9 @@
         <span class="flag-code">FR</span>
       </button>
     </div>
-    <p class="splash-skip" data-i18n="splash.skip">Tippen zum Weiter</p>
+    <p class="splash-skip" data-i18n="splash.skip">Flagge wählen oder tippen</p>
     <h1 class="splash-name" id="splash-name" data-i18n="title">Einblicke-ins-Jenseits</h1>
+    </div>
     <noscript>
       <p class="noscript">JavaScript wird gebraucht. Bitte in Safari öffnen. JavaScript is required. Open in Safari. JavaScript requis. Ouvre dans Safari.</p>
     </noscript>
@@ -152,7 +155,7 @@
   <a href="tel:112" data-i18n-aria="help.tel112" aria-label="Notruf 112">112</a>
 </footer>
 
-<script src="js/i18n.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/i18n.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>
