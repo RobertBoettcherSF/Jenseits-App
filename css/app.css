@@ -254,7 +254,7 @@ html:not([data-skip-splash="1"]) body {
 #splash .disclaimer {
   margin: 0;
   padding: 8px 10px;
-  border: 1px solid rgba(240, 160, 32, 0.85);
+  border: 1px solid rgba(243, 230, 196, 0.8);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.72);
   color: #f7f1e4;
@@ -263,14 +263,14 @@ html:not([data-skip-splash="1"]) body {
 }
 #splash .flag {
   background: rgba(0, 0, 0, 0.55);
-  color: #f6e7c1;
-  border-color: #e8a317;
+  color: #f7f4ea;
+  border-color: #f3e6c4;
   cursor: pointer;
 }
 #splash .flag[aria-pressed="true"] {
-  background: #f0a020;
-  color: #140c00;
-  border-color: #ffe7b0;
+  background: #f3e6c4;
+  color: #14110c;
+  border-color: #fff;
 }
 .disclaimer {
   margin: 0 0 14px;
@@ -452,13 +452,32 @@ header h1 {
 
 @media (max-height: 520px) {
   .splash-bottom {
-    gap: 4px;
-    padding-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 4px 12px;
+    padding-top: 8px;
     padding-bottom: 4px;
   }
-  #splash .disclaimer { font-size: 0.75rem; line-height: 1.25; padding: 4px 8px; }
-  .splash-skip { font-size: 0.8rem; }
-  .splash-name { font-size: 1.05rem; }
+  .splash-bottom > * { width: auto; margin: 0; }
+  #splash .disclaimer {
+    grid-column: 1 / -1;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    padding: 4px 8px;
+    max-height: 5rem;
+    overflow: auto;
+  }
+  #splash .lang-label { display: none; }
+  #splash-langs { grid-column: 1; }
+  .splash-skip { grid-column: 1; font-size: 0.8rem; }
+  .splash-name {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: end;
+    font-size: 1rem;
+    text-align: right;
+  }
   #splash .flag { min-height: 40px; padding: 4px; }
 }
 @media (forced-colors: active) {

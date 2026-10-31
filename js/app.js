@@ -2,9 +2,8 @@
 (function () {
   "use strict";
 
-  var APP_VERSION = "v0.1.1-splash b20261031-1720 5fe2276";
-  var CACHE_V = "2";
-  var SPLASH_MS = 4000;
+  var APP_VERSION = "v0.1.2-tunnel b20261031-1752 f7b4abc";
+  var CACHE_V = "3";
   var STORAGE_KEY = "jenseits.v1";
   var LANGS = ["de", "en", "fr"];
   var TABS = ["experience", "share", "near", "info"];
@@ -141,26 +140,24 @@
     if (LANGS.indexOf(code) < 0) return;
     state.settings.lang = code;
     if (TABS.indexOf(state.settings.lastTab) < 0) state.settings.lastTab = "experience";
+    var entering = splashOpen();
     persist();
-    if (splashOpen()) {
-      applyI18n();
-      armSplashTimer();
-      return;
-    }
     showShell();
+    if (entering) {
+      var tab = $("tab-" + (state.settings.lastTab || "experience"));
+      if (tab) tab.focus();
+    }
   }
 
-  /* Expanding concentric rings. Not the Field 1 WASM viz — a small canvas only. */
-  var splashTimer = 0;
+  /* Upper half of a dipole field: tunnel arches, cream on black. Not the Ada WASM viz. */
   var ringRaf = 0;
   var ringOn = false;
   var ringPhase = 0.2;
   var ringLast = 0;
   var ringDpr = 1;
   var ringSolid = [];
-  var ringDash = [7, 9];
-  var RING_N = 22;
-  var SPOKE_N = 18;
+  var ringDash = [3, 6];
+  var FIELD_N = 20;
 
   function ringMotion() {
     return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -189,44 +186,66 @@
     var w = fit.w;
     var h = fit.h;
     var phase = stillPhase == null ? ringPhase : stillPhase;
+    var panel = document.querySelector(".splash-bottom");
+    var panelTop = panel ? panel.getBoundingClientRect().top : h * 0.62;
+    var top = Math.max(4, h * 0.015);
+    var cy = panelTop - Math.max(16, h * 0.02);
+    if (cy < top + 48) cy = top + 48;
+    if (cy > h * 0.78) cy = h * 0.78;
+    var openH = cy - top;
+    var cx = w * 0.5;
+    var scale = Math.min((w * 0.52) / 1, openH / 0.4);
     ctx.setTransform(ringDpr, 0, 0, ringDpr, 0, 0);
     ctx.globalAlpha = 1;
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, w, h);
-    var cx = w * 0.5;
-    var cy = h * (h < w ? 0.4 : 0.38);
-    var maxR = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy));
-    var minR = 6;
-    var i;
-    var a0 = phase * 0.35;
-    ctx.lineCap = "butt";
-    ctx.strokeStyle = "#e8941a";
-    ctx.globalAlpha = 0.9;
+    var glowR = Math.min(w, openH) * 0.55;
+    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+    glow.addColorStop(0, "rgba(255, 252, 246, 0.95)");
+    glow.addColorStop(0.08, "rgba(246, 236, 214, 0.5)");
+    glow.addColorStop(0.28, "rgba(220, 210, 190, 0.12)");
+    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    var li;
+    var steps = 64;
+    for (li = 0; li < FIELD_N; li++) {
+      var t = ((li + phase) % FIELD_N) / FIELD_N;
+      var A = 0.045 + Math.pow(t, 0.92);
+      ctx.beginPath();
+      ctx.strokeStyle = li % 3 === 0 ? "#f4e7c8" : "#f7f6f2";
+      ctx.globalAlpha = 0.42 + 0.5 * (1 - t);
+      ctx.lineWidth = t < 0.25 ? 1.5 : 1.05;
+      ctx.setLineDash(li % 2 ? ringDash : ringSolid);
+      ctx.lineDashOffset = stillPhase == null ? -phase * 18 : 0;
+      var s;
+      for (s = 0; s <= steps; s++) {
+        var alpha = Math.PI * (0.5 - s / steps);
+        var sn = Math.sin(alpha);
+        var r = A * sn * sn;
+        var x = r * sn;
+        var y = r * Math.cos(alpha);
+        var sx = cx + x * scale;
+        var sy = cy - y * scale;
+        if (s === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+    }
+    ctx.setLineDash(ringSolid);
+    ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = "#f7f4ea";
     ctx.lineWidth = 1.15;
-    ctx.setLineDash(ringSolid);
-    for (i = 0; i < SPOKE_N; i++) {
-      var ang = a0 + (i / SPOKE_N) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(ang) * maxR, cy + Math.sin(ang) * maxR);
-      ctx.stroke();
-    }
-    for (i = 0; i < RING_N; i++) {
-      var slot = (i / RING_N + phase) % 1;
-      var radius = minR + (maxR - minR) * Math.pow(slot, 1.28);
-      if (radius < 3) continue;
-      var cream = i % 4 === 0;
-      ctx.strokeStyle = cream ? "#f6e2b0" : "#f0a020";
-      ctx.globalAlpha = 0.45 + 0.55 * (1 - slot);
-      ctx.lineWidth = slot < 0.2 ? 1.7 : 1.15;
-      ctx.setLineDash(i % 3 === 1 ? ringDash : ringSolid);
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.setLineDash(ringSolid);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx, cy - 0.4 * scale);
+    ctx.stroke();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#f6e2b0";
+    ctx.fillStyle = "#fffaf3";
     ctx.beginPath();
     ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
     ctx.fill();
@@ -237,7 +256,7 @@
     if (!ringLast) ringLast = now;
     var dt = Math.min(0.05, (now - ringLast) / 1000);
     ringLast = now;
-    ringPhase = (ringPhase + dt * 0.22) % 1;
+    ringPhase = (ringPhase + dt * 0.07) % 1;
     paintRings(null);
     ringRaf = window.requestAnimationFrame(ringFrame);
   }
@@ -263,14 +282,6 @@
     ringOn = false;
     if (ringRaf) window.cancelAnimationFrame(ringRaf);
     ringRaf = 0;
-    if (splashTimer) window.clearTimeout(splashTimer);
-    splashTimer = 0;
-  }
-
-  function armSplashTimer() {
-    if (splashTimer) window.clearTimeout(splashTimer);
-    if (!splashOpen()) return;
-    splashTimer = window.setTimeout(enterFromSplash, SPLASH_MS);
   }
 
   function enterFromSplash() {
@@ -554,7 +565,6 @@
     applyI18n();
     selectTab(state.settings.lastTab || "experience");
     startRings();
-    armSplashTimer();
     if (storageMode === "memory") showStorageWarn();
   }
 
